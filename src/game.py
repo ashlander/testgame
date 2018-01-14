@@ -135,14 +135,12 @@ def game_initialize():
 # R::::::R     R:::::R    UU:::::::::UU    N::::::N        N::::::N
 # RRRRRRRR     RRRRRRR      UUUUUUUUU      NNNNNNNN         NNNNNNN
 
-
-if __name__ == '__main__':
+def main():
     game_initialize()
     game_main_loop()
 
-
-
-
+if __name__ == '__main__':
+    main()
 
 
 #    print "j"
