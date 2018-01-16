@@ -5,6 +5,7 @@ import pygame
 #game files
 import constants
 import gamelogger
+import logging
 
 #=================================================================
 #   _____ _______ _____  _    _  _____ _______ _    _ _____  ______  _____ 
@@ -19,6 +20,28 @@ class struc_Tile:
         self.block_path = block_path
 
 
+#=================================================================
+#   ____  ____       _ ______ _____ _______ _____ 
+#  / __ \|  _ \     | |  ____/ ____|__   __/ ____|
+# | |  | | |_) |    | | |__ | |       | | | (___  
+# | |  | |  _ < _   | |  __|| |       | |  \___ \ 
+# | |__| | |_) | |__| | |___| |____   | |  ____) |
+#  \____/|____/ \____/|______\_____|  |_| |_____/ 
+
+class obj_Actor:
+    def __init__(self, x, y, sprite):
+        self.x = x #map address, not pixel
+        self.y = y #map address, not pixel
+        self.sprite = sprite
+
+    def draw(self):
+        SURFACE_MAIN.blit(self.sprite, (self.x*constants.CELL_WIDTH , self.y*constants.CELL_HEIGHT ))
+
+    def move(self, dx, dy):
+        if GAME_MAP[self.x + dx][self.y + dy].block_path == False:
+            self.x += dx
+            self.y += dy
+            # logging.debug('Player position %d %d', self.x, self.y)
 
 #=================================================================
 #  __  __          _____  
@@ -55,8 +78,8 @@ def draw_game():    #SyntaxError - all function should end with ":"
     #TODO Draw the map
     draw_map(GAME_MAP)
 
-    # draw the character
-    SURFACE_MAIN.blit(constants.S_PLAYER, ( 200, 200 ))
+    # draw the character  ???
+    PLAYER.draw()
 
     # update the display (flip and update)
     pygame.display.flip()
@@ -92,10 +115,20 @@ def game_main_loop():
         #get player input
         events_list = pygame.event.get()
 
-        #TODO process input
+        # process input
         for event in events_list:
             if event.type == pygame.QUIT:
                 game_quit = True
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    PLAYER.move(0, -1)
+                if event.key == pygame.K_DOWN:
+                    PLAYER.move(0, 1)
+                if event.key == pygame.K_LEFT:
+                    PLAYER.move(-1, 0)
+                if event.key == pygame.K_RIGHT:
+                    PLAYER.move(1, 0)
 
         # draw the game
         draw_game()
@@ -108,7 +141,7 @@ def game_main_loop():
 
 def game_initialize():
     '''This function initialize main window and pygame'''
-    global SURFACE_MAIN, GAME_MAP
+    global SURFACE_MAIN, GAME_MAP, PLAYER
 
     #initialize pygame
     pygame.init()
@@ -116,6 +149,8 @@ def game_initialize():
     SURFACE_MAIN = pygame.display.set_mode( (constants.GAME_WIDTH, constants.GAME_HEIGHT) )
 
     GAME_MAP = map_create()
+
+    PLAYER = obj_Actor(0, 0, constants.S_PLAYER)
 
 #=================================================================
 
@@ -138,11 +173,15 @@ def game_initialize():
 
 def main():
     gamelogger.init()
+
+    logging.info('Game initialization')
     game_initialize()
+
+    logging.info('Start main loop')
     game_main_loop()
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+    # main()
 
 
 #    print "j"
