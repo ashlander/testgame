@@ -5,6 +5,7 @@ import pygame
 #game files
 import constants
 import gamelogger
+import logging
 
 #=================================================================
 #   _____ _______ _____  _    _  _____ _______ _    _ _____  ______  _____ 
@@ -35,10 +36,12 @@ class obj_Actor:
 
     def draw(self):
         SURFACE_MAIN.blit(self.sprite, (self.x*constants.CELL_WIDTH , self.y*constants.CELL_HEIGHT ))
+
     def move(self, dx, dy):
         if GAME_MAP[self.x + dx][self.y + dy].block_path == False:
             self.x += dx
             self.y += dy
+            # logging.debug('Player position %d %d', self.x, self.y)
 
 #=================================================================
 #  __  __          _____  
@@ -170,7 +173,11 @@ def game_initialize():
 
 def main():
     gamelogger.init()
+
+    logging.info('Game initialization')
     game_initialize()
+
+    logging.info('Start main loop')
     game_main_loop()
 
 # if __name__ == '__main__':
