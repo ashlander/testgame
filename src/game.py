@@ -4,6 +4,7 @@ import pygame
 
 #game files
 import constants
+import gamelogger
 
 #=================================================================
 #   _____ _______ _____  _    _  _____ _______ _    _ _____  ______  _____ 
@@ -136,6 +137,7 @@ def game_initialize():
 # RRRRRRRR     RRRRRRR      UUUUUUUUU      NNNNNNNN         NNNNNNN
 
 def main():
+    gamelogger.init()
     game_initialize()
     game_main_loop()
 

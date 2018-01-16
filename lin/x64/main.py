@@ -2,6 +2,7 @@ import pygame
 import sys
 import os
 import libtcodpy as libtcod
+import logging
 
 # Launch this script file to start
 if __name__ == '__main__':
