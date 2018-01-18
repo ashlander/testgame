@@ -2,9 +2,9 @@ import sys
 import logging
 
 '''Initialize logger'''
-def init():
+def init(logFilename='_testgame.log'):
     logFormat = '%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s'
-    logging.basicConfig(filename='_testgame.log', level=logging.DEBUG, format=logFormat)
+    logging.basicConfig(filename=logFilename, level=logging.DEBUG, format=logFormat)
 
     logFormatter = logging.Formatter(logFormat)
     rootLogger = logging.getLogger()
