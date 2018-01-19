@@ -74,17 +74,19 @@ class Rect:
             return False
         return True
 
-    def union(self, rect):
+    def unionWith(self, rect):
         """Construct bounding box for this and other rect"""
+        unionRect = fromRect(self)
         if self.__topLeft.x > rect.__topLeft.x:
-            self.__topLeft.x = rect.__topLeft.x
-        if self.__topLeft.y > rect.__topLeft.y:
-            self.__topLeft.y = rect.__topLeft.y
+            unionRect.__topLeft.x = rect.__topLeft.x
+        if self.__topLeft.y < rect.__topLeft.y:
+            unionRect.__topLeft.y = rect.__topLeft.y
 
         if self.__rightBottom.x < rect.__rightBottom.x:
-            self.__rightBottom.x = rect.__rightBottom.x
-        if self.__rightBottom.y < rect.__rightBottom.y:
-            self.__rightBottom.y = rect.__rightBottom.y
+            unionRect.__rightBottom.x = rect.__rightBottom.x
+        if self.__rightBottom.y > rect.__rightBottom.y:
+            unionRect.__rightBottom.y = rect.__rightBottom.y
+        return unionRect
 
     def shiftX(self, dx):
         """Move rect by X"""
@@ -117,7 +119,7 @@ def fromSizes(ptStart, rectWidth, rectHeight):
 
 def fromRect(rect):
     """Initialize rect with other rect"""
-    return Rect(rect.__topLeft, rect.__rightBottom)
+    return Rect(rect.topLeft(), rect.rightBottom())
 
 ############################### TESTING ###############################
 
@@ -168,6 +170,23 @@ class TestRect(unittest.TestCase):
         self.assertEqual(rect.topLeft(),     point.fromXY(-3.0, 5.0))
         self.assertEqual(rect.rightBottom(), point.fromXY(11.0, -11.0))
 
+    def testUnion(self):
+        rect1 = fromSizes(point.empty(), 20, 20)
+        rect2 = fromSizes(point.fromXY(30,30), 20, 20)
+        rect  = rect1.unionWith(rect2)
+        self.assertEqual(rect.topLeft().x, 0)
+        self.assertEqual(rect.topLeft().y, 50)
+        self.assertEqual(rect.rightBottom().x, 50)
+        self.assertEqual(rect.rightBottom().y, 0)
+
+    def testUnion2(self):
+        rect1 = fromSizes(point.empty(), 50, 50)
+        rect2 = fromSizes(point.fromXY(30,30), 10, 10)
+        rect  = rect1.unionWith(rect2)
+        self.assertEqual(rect.topLeft().x, 0)
+        self.assertEqual(rect.topLeft().y, 50)
+        self.assertEqual(rect.rightBottom().x, 50)
+        self.assertEqual(rect.rightBottom().y, 0)
 
 if __name__ == '__main__':
     gamelogger.init('_test_rect.log')

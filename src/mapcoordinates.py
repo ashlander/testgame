@@ -118,15 +118,8 @@ class MapCoordinates:
         assert xTimes > 0, "Zoom coef %r should be more than 0" % xTimes
         self.__zoom(1/xTimes)
 
-    # def zoom(self, dpTileSize):
-    #     assert dpTileSize > 0, "Tile size %r should be more than 0" % dpTileSize
-    #     self.__zoom()
-
     def zoomDefault(self):
-        if self.__tileSize == 0:
-            self.__recalculate()
-        else:
-            logging.warning("Tile size is set, no map zoom allowed")
+        self.__recalculate()
 
     def shift(self, dx, dy):
         self.__screenZero.shift(dx,dy)
