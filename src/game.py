@@ -35,11 +35,11 @@ class obj_Actor:
         self.y = y #map address, not pixel
         self.sprite = sprite
 
-    def draw(self):
-        SURFACE_MAIN.blit(self.sprite, (self.x*constants.CELL_WIDTH , self.y*constants.CELL_HEIGHT ))
+    def draw(self, surface):
+        surface.blit(self.sprite, (self.x*constants.CELL_WIDTH , self.y*constants.CELL_HEIGHT ))
 
-    def move(self, dx, dy):
-        if GAME_MAP[self.x + dx][self.y + dy].block_path == False:
+    def move(self, dx, dy, gameMap):
+        if gameMap[self.x + dx][self.y + dy].block_path == False:
             self.x += dx
             self.y += dy
             # logging.debug('Player position %d %d', self.x, self.y)
@@ -81,15 +81,13 @@ class Game:
 
     def draw_game(self):    #SyntaxError - all function should end with ":"
 
-        global SURFACE_MAIN
-
         # clear the surface
-        SURFACE_MAIN.fill(constants.COLOR_DEFAULT_BG)
+        self.SURFACE_MAIN.fill(constants.COLOR_DEFAULT_BG)
         #TODO Draw the map
-        self.draw_map(GAME_MAP)
+        self.draw_map(self.GAME_MAP)
 
         # draw the character  ???
-        PLAYER.draw()
+        self.PLAYER.draw(self.SURFACE_MAIN)
 
         # update the display (flip and update)
         pygame.display.flip()
@@ -100,11 +98,11 @@ class Game:
             for y in range(0, constants.MAP_HEIGHT):
                 if map_to_draw[x][y].block_path == True:
                     #draw wall
-                    SURFACE_MAIN.blit(constants.S_WALL, ( x*constants.CELL_WIDTH, y*constants.CELL_HEIGHT ))
+                    self.SURFACE_MAIN.blit(constants.S_WALL, ( x*constants.CELL_WIDTH, y*constants.CELL_HEIGHT ))
 
                 else:
                     #draw floor
-                    SURFACE_MAIN.blit(constants.S_FLOOR, ( x*constants.CELL_WIDTH, y*constants.CELL_HEIGHT ))
+                    self.SURFACE_MAIN.blit(constants.S_FLOOR, ( x*constants.CELL_WIDTH, y*constants.CELL_HEIGHT ))
 
 
 #=================================================================
@@ -132,13 +130,13 @@ class Game:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
-                        PLAYER.move(0, -1)
+                        self.PLAYER.move(0, -1, self.GAME_MAP)
                     if event.key == pygame.K_DOWN:
-                        PLAYER.move(0, 1)
+                        self.PLAYER.move(0, 1, self.GAME_MAP)
                     if event.key == pygame.K_LEFT:
-                        PLAYER.move(-1, 0)
+                        self.PLAYER.move(-1, 0, self.GAME_MAP)
                     if event.key == pygame.K_RIGHT:
-                        PLAYER.move(1, 0)
+                        self.PLAYER.move(1, 0, self.GAME_MAP)
 
             # draw the game
             self.draw_game()
@@ -151,16 +149,15 @@ class Game:
 
     def game_initialize(self):
         '''This function initialize main window and pygame'''
-        global SURFACE_MAIN, GAME_MAP, PLAYER
 
         #initialize pygame
         pygame.init()
 
-        SURFACE_MAIN = pygame.display.set_mode( (constants.GAME_WIDTH, constants.GAME_HEIGHT) )
+        self.SURFACE_MAIN = pygame.display.set_mode( (constants.GAME_WIDTH, constants.GAME_HEIGHT) )
 
-        GAME_MAP = self.map_create()
+        self.GAME_MAP = self.map_create()
 
-        PLAYER = obj_Actor(0, 0, constants.S_PLAYER)
+        self.PLAYER = obj_Actor(0, 0, constants.S_PLAYER)
 
 #=================================================================
 
