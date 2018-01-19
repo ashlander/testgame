@@ -2,11 +2,11 @@
 import libtcodpy as libtcod
 import pygame
 
-
 #game files
 import constants
 import gamelogger
 import logging
+import mapcoordinates
 
 #=================================================================
 #   _____ _______ _____  _    _  _____ _______ _    _ _____  ______  _____ 
@@ -35,8 +35,8 @@ class obj_Actor:
         self.y = y #map address, not pixel
         self.sprite = sprite
 
-    def draw(self, surface):
-        surface.blit(self.sprite, (self.x*constants.CELL_WIDTH , self.y*constants.CELL_HEIGHT ))
+    def draw(self, surface, mapCoord):
+        surface.blit(self.sprite, (mapCoord.xLP2DP(self.x), mapCoord.yLP2DP(self.y) ))
 
     def move(self, dx, dy, gameMap):
         if gameMap[self.x + dx][self.y + dy].block_path == False:
@@ -87,7 +87,7 @@ class Game:
         self.draw_map(self.GAME_MAP)
 
         # draw the character  ???
-        self.PLAYER.draw(self.SURFACE_MAIN)
+        self.PLAYER.draw(self.SURFACE_MAIN, self.mapCoord)
 
         # update the display (flip and update)
         pygame.display.flip()
@@ -98,11 +98,12 @@ class Game:
             for y in range(0, constants.MAP_HEIGHT):
                 if map_to_draw[x][y].block_path == True:
                     #draw wall
-                    self.SURFACE_MAIN.blit(constants.S_WALL, ( x*constants.CELL_WIDTH, y*constants.CELL_HEIGHT ))
+
+                    self.SURFACE_MAIN.blit(constants.S_WALL, (self.mapCoord.xLP2DP(x), self.mapCoord.yLP2DP(y) ))
 
                 else:
                     #draw floor
-                    self.SURFACE_MAIN.blit(constants.S_FLOOR, ( x*constants.CELL_WIDTH, y*constants.CELL_HEIGHT ))
+                    self.SURFACE_MAIN.blit(constants.S_FLOOR, (self.mapCoord.xLP2DP(x), self.mapCoord.yLP2DP(y) ))
 
 
 #=================================================================
@@ -130,9 +131,9 @@ class Game:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
-                        self.PLAYER.move(0, -1, self.GAME_MAP)
-                    if event.key == pygame.K_DOWN:
                         self.PLAYER.move(0, 1, self.GAME_MAP)
+                    if event.key == pygame.K_DOWN:
+                        self.PLAYER.move(0, -1, self.GAME_MAP)
                     if event.key == pygame.K_LEFT:
                         self.PLAYER.move(-1, 0, self.GAME_MAP)
                     if event.key == pygame.K_RIGHT:
@@ -152,6 +153,7 @@ class Game:
 
         #initialize pygame
         pygame.init()
+        self.mapCoord = mapcoordinates.constructPositive(screenWidth=constants.GAME_WIDTH, screenHeight=constants.GAME_HEIGHT, mapWidth=constants.MAP_WIDTH, mapHeight=constants.MAP_HEIGHT, tileSize=constants.CELL_WIDTH)
 
         self.SURFACE_MAIN = pygame.display.set_mode( (constants.GAME_WIDTH, constants.GAME_HEIGHT) )
 
