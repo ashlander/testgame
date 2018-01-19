@@ -38,10 +38,14 @@ class obj_Actor:
     def draw(self, surface, mapCoord):
         surface.blit(self.sprite, (mapCoord.xLP2DP(self.x), mapCoord.yLP2DP(self.y) ))
 
-    def move(self, dx, dy, gameMap):
-        if gameMap[self.x + dx][self.y + dy].block_path == False:
+    def move(self, dx, dy, gameMap, mapCoord):
+        x = int(round(self.x))
+        y = int(round(self.y))
+        if gameMap[x + dx][y + dy].block_path == False:
             self.x += dx
             self.y += dy
+            mapCoord.shift(dx, dy)
+
             # logging.debug('Player position %d %d', self.x, self.y)
 
 class Game:
@@ -131,13 +135,13 @@ class Game:
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
-                        self.PLAYER.move(0, 1, self.GAME_MAP)
+                        self.PLAYER.move(0, 1, self.GAME_MAP, self.mapCoord)
                     if event.key == pygame.K_DOWN:
-                        self.PLAYER.move(0, -1, self.GAME_MAP)
+                        self.PLAYER.move(0, -1, self.GAME_MAP, self.mapCoord)
                     if event.key == pygame.K_LEFT:
-                        self.PLAYER.move(-1, 0, self.GAME_MAP)
+                        self.PLAYER.move(-1, 0, self.GAME_MAP, self.mapCoord)
                     if event.key == pygame.K_RIGHT:
-                        self.PLAYER.move(1, 0, self.GAME_MAP)
+                        self.PLAYER.move(1, 0, self.GAME_MAP, self.mapCoord)
 
             # draw the game
             self.draw_game()
@@ -159,7 +163,8 @@ class Game:
 
         self.GAME_MAP = self.map_create()
 
-        self.PLAYER = obj_Actor(0, 0, constants.S_PLAYER)
+        mapCenter = self.mapCoord.mapRect.centre()
+        self.PLAYER = obj_Actor(mapCenter.x, mapCenter.y, constants.S_PLAYER)
 
 #=================================================================
 
