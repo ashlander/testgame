@@ -16,9 +16,52 @@ import mapcoordinates
 #  ____) |  | |  | | \ \| |__| | |____   | |  | |__| | | \ \| |____ ____) |
 # |_____/   |_|  |_|  \_\\____/ \_____|  |_|   \____/|_|  \_\______|_____/ 
 
-class struc_Tile:
+class struc_Tile(object):
     def __init__ (self, block_path):
         self.block_path = block_path
+
+
+#=================================================================
+#   _____ ____  __  __ _____   ____  _   _ ______ _   _ _______ _____ 
+#  / ____/ __ \|  \/  |  __ \ / __ \| \ | |  ____| \ | |__   __/ ____|
+# | |   | |  | | \  / | |__) | |  | |  \| | |__  |  \| |  | | | (___  
+# | |   | |  | | |\/| |  ___/| |  | | . ` |  __| | . ` |  | |  \___ \ 
+# | |___| |__| | |  | | |    | |__| | |\  | |____| |\  |  | |  ____) |
+#  \_____\____/|_|  |_|_|     \____/|_| \_|______|_| \_|  |_| |_____/ 
+
+class com_Creature(object):
+    '''Creatures have health, and can damage objects by attacking, can also die'''
+    def __init__(self, name_instance, hp = 10):
+        self.name_instance = name_instance
+        self.hp = hp
+
+        
+#TODO class com_Item(object):
+#     """docstring for com_Item"""
+#     def __init__(self, arg):
+#         super(com_Item, self).__init__()
+#         self.arg = arg
+        
+#TODO class com_Container(object):
+#     """docstring for com_Container"""
+#     def __init__(self, arg):
+#         super(com_Container, self).__init__()
+#         self.arg = arg
+
+
+
+#=================================================================
+#           _____ 
+#     /\   |_   _|
+#    /  \    | |  
+#   / /\ \   | |  
+#  / ____ \ _| |_ 
+# /_/    \_\_____|
+
+class ai_Test(object):
+    '''Execute once per turn'''
+    def take_turn(self, gameMap, mapCoord):
+        self.owner.move(1, 0, gameMap, mapCoord)
 
 
 #=================================================================
@@ -29,14 +72,26 @@ class struc_Tile:
 # | |__| | |_) | |__| | |___| |____   | |  ____) |
 #  \____/|____/ \____/|______\_____|  |_| |_____/ 
 
-class obj_Actor:
-    def __init__(self, x, y, sprite):
+class obj_Actor(object):
+    def __init__(self, x, y, name_object, sprite, creature = None, ai = None):
         self.x = x #map address, not pixel
         self.y = y #map address, not pixel
         self.sprite = sprite
 
+        self.creature = creature
+        if creature:
+            creature.owner = self
+
+        self.ai = ai
+        if ai:
+            ai.owner = self
+
+
     def draw(self, surface, mapCoord):
         surface.blit(self.sprite, (mapCoord.xLP2DP(self.x), mapCoord.yLP2DP(self.y) ))
+
+    def extraMove(self, dx, dy, mapCoord):
+        pass
 
     def move(self, dx, dy, gameMap, mapCoord):
         x = int(round(self.x))
@@ -44,11 +99,22 @@ class obj_Actor:
         if gameMap[x + dx][y + dy].block_path == False:
             self.x += dx
             self.y += dy
-            mapCoord.shift(dx, dy)
+            self.extraMove(dx, dy, mapCoord)
 
             # logging.debug('Player position %d %d', self.x, self.y)
 
-class Game:
+class Player(obj_Actor):
+    """player actor"""
+    def __init__(self, x, y, name_object, sprite, creature = None, ai = None):
+        super(Player, self).__init__(x, y, name_object, sprite, creature, ai)
+ 
+
+    def extraMove(self, dx, dy, mapCoord):
+        super(Player, self).extraMove(dx, dy, mapCoord)
+        mapCoord.shift(dx, dy)
+        
+
+class Game(object):
 
     def __init__(self):
         logging.info('Game initialization')
@@ -57,13 +123,14 @@ class Game:
     def run(self):
         logging.info('Start main loop')
         self.game_main_loop()
-#=================================================================
-#  __  __          _____  
-# |  \/  |   /\   |  __ \ 
-# | \  / |  /  \  | |__) |
-# | |\/| | / /\ \ |  ___/ 
-# | |  | |/ ____ \| |     
-# |_|  |_/_/    \_\_| 
+
+    #=================================================================
+    #  __  __          _____  
+    # |  \/  |   /\   |  __ \ 
+    # | \  / |  /  \  | |__) |
+    # | |\/| | / /\ \ |  ___/ 
+    # | |  | |/ ____ \| |     
+    # |_|  |_/_/    \_\_| 
 
 
     def map_create(self):
@@ -74,13 +141,13 @@ class Game:
 
         return new_map
 
-#=================================================================
-#  _____  _____       __          _______ _   _  _____  _____ 
-# |  __ \|  __ \     /\ \        / /_   _| \ | |/ ____|/ ____|
-# | |  | | |__) |   /  \ \  /\  / /  | | |  \| | |  __| (___  
-# | |  | |  _  /   / /\ \ \/  \/ /   | | | . ` | | |_ |\___ \ 
-# | |__| | | \ \  / ____ \  /\  /   _| |_| |\  | |__| |____) |
-# |_____/|_|  \_\/_/    \_\/  \/   |_____|_| \_|\_____|_____/ 
+    #=================================================================
+    #  _____  _____       __          _______ _   _  _____  _____ 
+    # |  __ \|  __ \     /\ \        / /_   _| \ | |/ ____|/ ____|
+    # | |  | | |__) |   /  \ \  /\  / /  | | |  \| | |  __| (___  
+    # | |  | |  _  /   / /\ \ \/  \/ /   | | | . ` | | |_ |\___ \ 
+    # | |__| | | \ \  / ____ \  /\  /   _| |_| |\  | |__| |____) |
+    # |_____/|_|  \_\/_/    \_\/  \/   |_____|_| \_|\_____|_____/ 
                                         
 
     def draw_game(self):    #SyntaxError - all function should end with ":"
@@ -89,9 +156,14 @@ class Game:
         self.SURFACE_MAIN.fill(constants.COLOR_DEFAULT_BG)
         #TODO Draw the map
         self.draw_map(self.GAME_MAP)
-
         # draw the character  ???
-        self.PLAYER.draw(self.SURFACE_MAIN, self.mapCoord)
+        # self.ENEMY.draw(self.SURFACE_MAIN, self.mapCoord)
+        # # draw the character  ???
+        # self.PLAYER.draw(self.SURFACE_MAIN, self.mapCoord)
+
+        #draw all objects
+        for obj in self.GAME_OBJECTS:
+            obj.draw(self.SURFACE_MAIN, self.mapCoord)
 
         # update the display (flip and update)
         pygame.display.flip()
@@ -110,38 +182,36 @@ class Game:
                     self.SURFACE_MAIN.blit(constants.S_FLOOR, (self.mapCoord.xLP2DP(x), self.mapCoord.yLP2DP(y) ))
 
 
-#=================================================================
-#  _____          __  __ ______ 
-#  / ____|   /\   |  \/  |  ____|
-# | |  __   /  \  | \  / | |__   
-# | | |_ | / /\ \ | |\/| |  __|  
-# | |__| |/ ____ \| |  | | |____ 
-#  \_____/_/    \_\_|  |_|______|
+    #=================================================================
+    #  _____          __  __ ______ 
+    #  / ____|   /\   |  \/  |  ____|
+    # | |  __   /  \  | \  / | |__   
+    # | | |_ | / /\ \ | |\/| |  __|  
+    # | |__| |/ ____ \| |  | | |____ 
+    #  \_____/_/    \_\_|  |_|______|
 
 
     def game_main_loop(self):
         '''In this function we loop the main game?'''
         game_quit = False
 
+        #player action definition ???
+        player_action = "no-action"
+
         while not game_quit:
 
-            #get player input
-            events_list = pygame.event.get()
+            #handle the keys
+            player_action = self.game_handle_keys()
 
-            # process input
-            for event in events_list:
-                if event.type == pygame.QUIT:
-                    game_quit = True
+            if player_action == "QUIT":
+                game_quit = True
 
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        self.PLAYER.move(0, 1, self.GAME_MAP, self.mapCoord)
-                    if event.key == pygame.K_DOWN:
-                        self.PLAYER.move(0, -1, self.GAME_MAP, self.mapCoord)
-                    if event.key == pygame.K_LEFT:
-                        self.PLAYER.move(-1, 0, self.GAME_MAP, self.mapCoord)
-                    if event.key == pygame.K_RIGHT:
-                        self.PLAYER.move(1, 0, self.GAME_MAP, self.mapCoord)
+                # logging.debug("action = %s", player_action)
+            elif player_action != "no-action":
+                for obj in self.GAME_OBJECTS:
+                    if obj.ai:
+                        obj.ai.take_turn(self.GAME_MAP, self.mapCoord)
+
 
             # draw the game
             self.draw_game()
@@ -163,9 +233,43 @@ class Game:
 
         self.GAME_MAP = self.map_create()
 
-        mapCenter = self.mapCoord.mapRect.centre()
-        self.PLAYER = obj_Actor(mapCenter.x, mapCenter.y, constants.S_PLAYER)
 
+        creature_com1 = com_Creature("greg")
+        mapCenter = self.mapCoord.mapRect.centre()
+        self.PLAYER = Player(mapCenter.x, mapCenter.y, "human", constants.S_PLAYER, creature = creature_com1)
+
+        creature_com2 = com_Creature("jackie")
+        ai_com = ai_Test()
+        self.ENEMY = obj_Actor(10, 5, "carrot", constants.S_ENEMY, creature = creature_com2, ai = ai_com)
+
+        self.GAME_OBJECTS = [self.PLAYER, self.ENEMY]
+
+
+    def game_handle_keys(self):
+
+        #get player input
+        events_list = pygame.event.get()
+
+        # process input
+        for event in events_list:
+            if event.type == pygame.QUIT:
+                return "QUIT"
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.PLAYER.move(0, 1, self.GAME_MAP, self.mapCoord)
+                    return "player-moved"
+                if event.key == pygame.K_DOWN:
+                    self.PLAYER.move(0, -1, self.GAME_MAP, self.mapCoord)
+                    return "player-moved"
+                if event.key == pygame.K_LEFT:
+                    self.PLAYER.move(-1, 0, self.GAME_MAP, self.mapCoord)
+                    return "player-moved"
+                if event.key == pygame.K_RIGHT:
+                    self.PLAYER.move(1, 0, self.GAME_MAP, self.mapCoord)
+                    return "player-moved"
+
+        return "no-action"
 #=================================================================
 
 # RRRRRRRRRRRRRRRRR   UUUUUUUU     UUUUUUUUNNNNNNNN        NNNNNNNN
