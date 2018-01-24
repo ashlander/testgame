@@ -60,8 +60,9 @@ class com_Creature(object):
 
 class ai_Test(object):
     '''Execute once per turn'''
-    def take_turn(self, gameMap, mapCoord):
-        self.owner.move(1, 0, gameMap, mapCoord)
+    def take_turn(self, gameMap, gameObjects, mapCoord):
+        self.owner.move(libtcod.random_get_int(0, -1, 1), libtcod.random_get_int(0, -1, 1), gameMap, gameObjects, mapCoord)
+        # self.owner.move(0, 0, gameMap, gameObjects, mapCoord)
 
 
 #=================================================================
@@ -93,15 +94,33 @@ class obj_Actor(object):
     def extraMove(self, dx, dy, mapCoord):
         pass
 
-    def move(self, dx, dy, gameMap, mapCoord):
+    def move(self, dx, dy, gameMap, gameObjects, mapCoord):
         x = int(round(self.x))
         y = int(round(self.y))
-        if gameMap[x + dx][y + dy].block_path == False:
+
+        tile_is_wall = (gameMap[x + dx][y + dy].block_path == True)
+
+        target = None
+
+        for object in gameObjects:
+            if (object is not self and
+                object.x == self.x + dx and
+                object.y == self.y + dy and
+                object.creature):
+                target = object
+                break
+
+        if target:
+            logging.info(self.creature.name_instance + " attacks " + target.creature.name_instance)
+
+        if not tile_is_wall and target is None:
             self.x += dx
             self.y += dy
             self.extraMove(dx, dy, mapCoord)
 
             # logging.debug('Player position %d %d', self.x, self.y)
+
+
 
 class Player(obj_Actor):
     """player actor"""
@@ -139,7 +158,45 @@ class Game(object):
         new_map[10][10].block_path = True
         new_map[10][15].block_path = True
 
+        self.border_create2(new_map)
+
         return new_map
+
+    def border_create(self, new_map):
+        for x in range(0, constants.MAP_WIDTH):
+            for y in range(0, constants.MAP_HEIGHT):
+                if x < constants.MAP_WIDTH:
+                    if y == 0:
+                        new_map[x][y].block_path = True
+
+        for x in range(0, constants.MAP_WIDTH):
+            for y in range(0, constants.MAP_HEIGHT):
+                if x == 0 :
+                    if y < constants.MAP_HEIGHT:
+                        new_map[x][y].block_path = True
+
+        for x in range(0, constants.MAP_WIDTH):
+            for y in range(0, constants.MAP_HEIGHT):
+                if x >= constants.MAP_WIDTH - 1:
+                    if y < constants.MAP_HEIGHT:
+                        new_map[x][y].block_path = True
+                        
+        for x in range(0, constants.MAP_WIDTH):
+            for y in range(0, constants.MAP_HEIGHT):
+                if x < constants.MAP_WIDTH:
+                    if y >= constants.MAP_HEIGHT - 1:
+                        new_map[x][y].block_path = True                                        
+
+    def border_create2(self, new_map):
+        for x in range(0, constants.MAP_WIDTH):
+            new_map[x][0].block_path = True
+            new_map[x][constants.MAP_HEIGHT-1].block_path = True
+
+        for y in range(0, constants.MAP_HEIGHT):    
+            new_map[0][y].block_path = True
+            new_map[constants.MAP_WIDTH-1][y].block_path = True
+
+
 
     #=================================================================
     #  _____  _____       __          _______ _   _  _____  _____ 
@@ -210,7 +267,7 @@ class Game(object):
             elif player_action != "no-action":
                 for obj in self.GAME_OBJECTS:
                     if obj.ai:
-                        obj.ai.take_turn(self.GAME_MAP, self.mapCoord)
+                        obj.ai.take_turn(self.GAME_MAP, self.GAME_OBJECTS, self.mapCoord)
 
 
             # draw the game
@@ -242,7 +299,7 @@ class Game(object):
         ai_com = ai_Test()
         self.ENEMY = obj_Actor(10, 5, "carrot", constants.S_ENEMY, creature = creature_com2, ai = ai_com)
 
-        self.GAME_OBJECTS = [self.PLAYER, self.ENEMY]
+        self.GAME_OBJECTS = [self.ENEMY, self.PLAYER]
 
 
     def game_handle_keys(self):
@@ -257,16 +314,16 @@ class Game(object):
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    self.PLAYER.move(0, 1, self.GAME_MAP, self.mapCoord)
+                    self.PLAYER.move(0, 1, self.GAME_MAP, self.GAME_OBJECTS, self.mapCoord)
                     return "player-moved"
                 if event.key == pygame.K_DOWN:
-                    self.PLAYER.move(0, -1, self.GAME_MAP, self.mapCoord)
+                    self.PLAYER.move(0, -1, self.GAME_MAP, self.GAME_OBJECTS,  self.mapCoord)
                     return "player-moved"
                 if event.key == pygame.K_LEFT:
-                    self.PLAYER.move(-1, 0, self.GAME_MAP, self.mapCoord)
+                    self.PLAYER.move(-1, 0, self.GAME_MAP, self.GAME_OBJECTS,  self.mapCoord)
                     return "player-moved"
                 if event.key == pygame.K_RIGHT:
-                    self.PLAYER.move(1, 0, self.GAME_MAP, self.mapCoord)
+                    self.PLAYER.move(1, 0, self.GAME_MAP, self.GAME_OBJECTS,  self.mapCoord)
                     return "player-moved"
 
         return "no-action"
