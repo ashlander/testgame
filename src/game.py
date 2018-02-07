@@ -31,11 +31,20 @@ class struc_Tile(object):
 
 class com_Creature(object):
     '''Creatures have health, and can damage objects by attacking, can also die'''
-    def __init__(self, name_instance, hp = 10):
+    def __init__(self, name_instance, hp = 10, death_function = None):
         self.name_instance = name_instance
+        self.maxhp = hp
         self.hp = hp
+        self.death_function = death_function
 
-        
+    def take_damage(self, damage):
+        self.hp -= damage
+        logging.info (self.name_instance + "'s health is " + str(self.hp) + "/" + str(self.maxhp))
+
+        if self.hp <= 0:
+            if self.death_function is not None:
+                self.death_function(self.owner)
+
 #TODO class com_Item(object):
 #     """docstring for com_Item"""
 #     def __init__(self, arg):
@@ -65,6 +74,14 @@ class ai_Test(object):
         # self.owner.move(0, 0, gameMap, gameObjects, mapCoord)
 
 
+def death_monster (monster):
+    '''On death, most monsters stop moving'''
+
+    logging.info(monster.creature.name_instance + " is dead!")
+
+    monster.creature = None
+    monster.ai = None
+    monster.sprite = constants.S_DEADENEMY
 #=================================================================
 #   ____  ____       _ ______ _____ _______ _____ 
 #  / __ \|  _ \     | |  ____/ ____|__   __/ ____|
@@ -111,7 +128,8 @@ class obj_Actor(object):
                 break
 
         if target:
-            logging.info(self.creature.name_instance + " attacks " + target.creature.name_instance)
+            logging.info(self.creature.name_instance + " attacks " + target.creature.name_instance + " for 5 dmg!")
+            target.creature.take_damage(5)
 
         if not tile_is_wall and target is None:
             self.x += dx
@@ -295,7 +313,7 @@ class Game(object):
         mapCenter = self.mapCoord.mapRect.centre()
         self.PLAYER = Player(mapCenter.x, mapCenter.y, "human", constants.S_PLAYER, creature = creature_com1)
 
-        creature_com2 = com_Creature("jackie")
+        creature_com2 = com_Creature("jackie", death_function = death_monster)
         ai_com = ai_Test()
         self.ENEMY = obj_Actor(10, 5, "carrot", constants.S_ENEMY, creature = creature_com2, ai = ai_com)
 
