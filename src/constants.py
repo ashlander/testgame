@@ -24,5 +24,6 @@ COLOR_DEFAULT_BG = COLOR_GREY
 # SPRITES
 S_PLAYER = pygame.image.load("data/player.png")
 S_ENEMY = pygame.image.load ("data/enemyCarrot.png")
+S_DEADENEMY = pygame.image.load("data/player.png")
 S_WALL = pygame.image.load("data/wall.png")
 S_FLOOR = pygame.image.load("data/floor.png")
